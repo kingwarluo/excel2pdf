@@ -4,10 +4,16 @@ import com.kingwarluo.excel2pdf.util.CsvUtil;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.io.IOException;
 
 public class CenterPanel extends JPanel {
+
+    /**
+     * 滚动面板
+     */
+    JScrollPane jScrollPane;
 
     /**
      * 表格
@@ -29,11 +35,26 @@ public class CenterPanel extends JPanel {
 
     public CenterPanel(JFrame frame) {
         super(new BorderLayout());
+        jScrollPane = new JScrollPane();
         jTable = new JTable();
         DefaultTableModel model = new DefaultTableModel(head, 0);
         jTable.setModel(model);
-        this.add(jTable.getTableHeader(), BorderLayout.NORTH);
-        this.add(jTable, BorderLayout.CENTER);
+        //设置不可拖动，表头不可拖拽，
+        jTable.getTableHeader().setReorderingAllowed(false);
+        //表头，不可在界面重新拖拽大小
+        jTable.getTableHeader().setResizingAllowed(false);
+        //不自适应宽度，即超出时显示滚动条，很重要
+        jTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        //设置表头宽度
+        for (int i = 0; i < head.length; i++) {
+            jTable.getColumnModel().getColumn(i).setPreferredWidth(200);
+        }
+        //设置行高
+        jTable.setRowHeight(50);
+        //设置滚动条
+        jScrollPane = new JScrollPane();
+        jScrollPane.setViewportView(jTable);
+        this.add(jScrollPane);
     }
 
     /**
@@ -47,6 +68,10 @@ public class CenterPanel extends JPanel {
             data = CsvUtil.readCsvFile(filePath);
             DefaultTableModel model = new DefaultTableModel(data, head);
             jTable.setModel(model);
+            //设置表头宽度
+            for (int i = 0; i < head.length; i++) {
+                jTable.getColumnModel().getColumn(i).setPreferredWidth(200);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -8,6 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -74,7 +75,10 @@ public class TopPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 String targetPath = "D:/"+new SimpleDateFormat("yyMMddHHmmss").format(new Date()).toString() +"zsResult.pdf";
                 try {
-                    InputStream fis = this.getClass().getClassLoader().getResourceAsStream("VICSBOL.pdf");
+                    String url = System.getProperty("user.dir");
+                    //TODO 打包时，这层要去掉
+                    url = url.substring(0, url.lastIndexOf("\\"));
+                    InputStream fis = new FileInputStream(url + "/VICSBOL.pdf");
                     PdfUtil pdf = new PdfUtil(fis);
                     pdf.shelterSecion();
                     pdf.setBarCodeImg();
