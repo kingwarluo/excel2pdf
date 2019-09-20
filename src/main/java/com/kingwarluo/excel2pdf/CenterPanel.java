@@ -43,12 +43,16 @@ public class CenterPanel extends JPanel {
         jTable.getTableHeader().setReorderingAllowed(false);
         //表头，不可在界面重新拖拽大小
         jTable.getTableHeader().setResizingAllowed(false);
+        //设置表头字体
+        jTable.getTableHeader().setFont(new Font("楷体", Font.PLAIN, 16));// 设置表格字体
         //不自适应宽度，即超出时显示滚动条，很重要
         jTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         //设置表头宽度
         for (int i = 0; i < head.length; i++) {
             jTable.getColumnModel().getColumn(i).setPreferredWidth(200);
         }
+        //设置行字体
+        jTable.setFont(new Font("楷体", Font.PLAIN, 25));
         //设置行高
         jTable.setRowHeight(50);
         //设置滚动条

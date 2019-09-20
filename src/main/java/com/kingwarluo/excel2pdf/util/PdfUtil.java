@@ -128,15 +128,9 @@ public class PdfUtil {
             /* 必须要调用这个，否则文档不会生成的 */
             ps.setFormFlattening(true);
             ps.close();
-//            OutputStream fos = new FileOutputStream(target);
-//            fos.write();
-//            fos.flush();
-//            fos.close();
-//            bos.close();
-//            reader.close();
             return bos.toByteArray();
         } catch (Exception e) {
-            System.out.println("保存pdf文件失败");
+            System.out.println("生成流失败");
             e.printStackTrace();
         }
         return null;

@@ -2,10 +2,15 @@ package com.kingwarluo.excel2pdf.util;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
+import com.google.zxing.Writer;
 import com.google.zxing.WriterException;
+import com.google.zxing.aztec.AztecWriter;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
-import com.google.zxing.oned.Code128Writer;
+import com.google.zxing.datamatrix.DataMatrixWriter;
+import com.google.zxing.oned.*;
+import com.google.zxing.pdf417.PDF417Writer;
+import com.google.zxing.qrcode.QRCodeWriter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.imageio.ImageIO;
@@ -62,6 +67,24 @@ public class BarCodeUtils {
             Code128Writer writer = new Code128Writer();
             // 编码内容, 编码类型, 宽度, 高度, 设置参数
             BitMatrix bitMatrix = writer.encode(vaNumber, BarcodeFormat.CODE_128, WIDTH, HEIGHT, hints);
+            return MatrixToImageWriter.toBufferedImage(bitMatrix);
+        } catch (WriterException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 生成 图片缓冲
+     *
+     * @param vaNumber VA 码
+     * @return 返回BufferedImage
+     * @author fxbin
+     */
+    public static BufferedImage getBarCode(Writer writer, BarcodeFormat barcodeFormat, String vaNumber) {
+        try {
+            // 编码内容, 编码类型, 宽度, 高度, 设置参数
+            BitMatrix bitMatrix = writer.encode(vaNumber, barcodeFormat, WIDTH, HEIGHT, hints);
             return MatrixToImageWriter.toBufferedImage(bitMatrix);
         } catch (WriterException e) {
             e.printStackTrace();
@@ -133,7 +156,10 @@ public class BarCodeUtils {
     }
 
     public static void main(String[] args) throws IOException {
-        BufferedImage image = insertWords(getBarCode("123456789"), "中国");
+        //Bill of Lading Number  Code.128
+        //Pro number    Code.39
+        Writer writer = new UPCEWriter();
+        BufferedImage image = insertWords(getBarCode(writer, BarcodeFormat.UPC_EAN_EXTENSION, "12956732-7"), "中国");
         ImageIO.write(image, "jpg", new File("D://abc.jpg"));
     }
 }
