@@ -61,24 +61,4 @@ public class CenterPanel extends JPanel {
         this.add(jScrollPane);
     }
 
-    /**
-     * @description:读取文件并展示到table
-     *
-     * @author jianhua.luo
-     * @date 2019/8/30
-     */
-    public void readAndShowCsv(String filePath) {
-        try {
-            data = CsvUtil.readCsvFile(filePath);
-            DefaultTableModel model = new DefaultTableModel(data, head);
-            jTable.setModel(model);
-            //设置表头宽度
-            for (int i = 0; i < head.length; i++) {
-                jTable.getColumnModel().getColumn(i).setPreferredWidth(200);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 }
