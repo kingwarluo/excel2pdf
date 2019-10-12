@@ -1,23 +1,22 @@
 package com.kingwarluo.excel2pdf;
 
 import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.pdf.PdfReader;
 import com.kingwarluo.excel2pdf.util.CommonUtil;
 import com.kingwarluo.excel2pdf.util.CsvUtil;
 import com.kingwarluo.excel2pdf.util.PdfUtil;
 import com.kingwarluo.excel2pdf.util.ExcelUtil;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JButton;
+import javax.swing.Box;
+import javax.swing.JOptionPane;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * @description:主要界面
@@ -95,6 +94,7 @@ public class MainFrame extends JFrame {
     private void addEvents(MainFrame frame) {
         jbImport.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 openFileDialog = new FileDialog(frame, "选择文件", FileDialog.LOAD);
                 openFileDialog.setVisible(true);
@@ -112,28 +112,21 @@ public class MainFrame extends JFrame {
                             "警告", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-                frame.readAndShowCsv(filePath);
+                //读取填充数据信息
+                CsvUtil.readCsvFile(filePath);
             }
         });
 
         jbGenerate.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
-                String targetPath = "D:/"+new SimpleDateFormat("yyMMddHHmmss").format(new Date()).toString() +"zsResult.pdf";
                 try {
                     InputStream fis = new FileInputStream(CommonUtil.getRootPath() + "/VICSBOL.pdf");
                     PdfUtil pdf = new PdfUtil(fis);
-                    pdf.shelterSecion();
-                    pdf.setBarCodeImg();
-                    pdf.setFieldValue();
-                    byte[] bytes = pdf.savePdfFileToTargetPath(targetPath);
-                    byte[] bytes2 = pdf.newPage();
-                    PdfReader reader = new PdfReader(bytes);
-                    PdfReader reader2 = new PdfReader(bytes2);
-                    java.util.List<PdfReader> readerList = new ArrayList<>();
-                    readerList.add(reader);
-                    readerList.add(reader2);
-                    pdf.createNewPage(targetPath, readerList);
+                    byte[] pdfPage = pdf.fillPageOne();
+                    byte[] pdfPage3 = pdf.fillPageThree();
+                    pdf.mergeMultiToOnePdf(pdfPage, pdfPage3);
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 } catch (DocumentException ex) {
@@ -141,27 +134,6 @@ public class MainFrame extends JFrame {
                 }
             }
         });
-    }
-
-
-    /**
-     * @description:读取文件并展示到table
-     *
-     * @author jianhua.luo
-     * @date 2019/8/30
-     */
-    public void readAndShowCsv(String filePath) {
-        try {
-            CsvUtil.readCsvFile(filePath);
-//            DefaultTableModel model = new DefaultTableModel(data, head);
-//            jTable.setModel(model);
-//            //设置表头宽度
-//            for (int i = 0; i < head.length; i++) {
-//                jTable.getColumnModel().getColumn(i).setPreferredWidth(200);
-//            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
 }

@@ -20,36 +20,44 @@ import java.util.*;
  */
 public class ExcelUtil {
 
+    public static void main(String[] args) {
+        try {
+            readChargesToBill();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static Map<String, Map<String, String>> chargesToBillMap = null;
     public static Map<String, Map<String, String>> relationMap = null;
     public static Map<String, Map<String, String>> scacMap = null;
     public static Map<String, Map<String, String>> shipFromMap = null;
 
     private static final String chargesToBillFile = "/ChargesBillTo.xlsx";
-    private static final String[] chargesToBillArray = {"Code", "Name", "Address", "City", "State", "Zip"};
+    private static final List<String> chargesToBillHeadList = new ArrayList<>();
     public static void readChargesToBill() throws IOException {
-        chargesToBillMap = readExcelFile(chargesToBillFile, chargesToBillArray, "Code");
+        chargesToBillMap = readExcelFile(chargesToBillFile, chargesToBillHeadList);
     }
 
-    private static final String relationFile = "/relation.xlsx";
-    private static final String[] relationArray = {"csv key", "pdf key"};
+    private static final String relationFile = "/relation_bak.xlsx";
+    private static final List<String> relationHeadList = new ArrayList<>();
     public static void readRelation() throws IOException {
-        relationMap = readExcelFile(relationFile, relationArray, "csv key");
+        relationMap = readExcelFile(relationFile, relationHeadList);
     }
 
     private static final String scacFile = "/SCAC.xlsx";
-    private static final String[] scacArray = {"SCAC", "Carrier Name"};
+    private static final List<String> scacHeadList = new ArrayList<>();
     public static void readSCAC() throws IOException {
-        scacMap = readExcelFile(scacFile, scacArray, "SCAC");
+        scacMap = readExcelFile(scacFile, scacHeadList);
     }
 
     private static final String shipFromFile = "/Ship From.xlsx";
-    private static final String[] shipFromArray = {"Supplier Code", "Shipfrom_Code", "Warehouse", "Name", "Address", "City", "State", "Zip", "Contact", "Phone_No", "NMFC", "Emails", "Note"};
+    private static final List<String> shipFromHeadList = new ArrayList<>();
     public static void readShipFrom() throws IOException {
-        shipFromMap = readExcelFile(shipFromFile, shipFromArray, "Shipfrom_Code");
+        shipFromMap = readExcelFile(shipFromFile, shipFromHeadList);
     }
 
-    private static Map<String, Map<String, String>> readExcelFile(String file, String[] columns, String keyColumn) throws IOException {
+    private static Map<String, Map<String, String>> readExcelFile(String file, List<String> columns) throws IOException {
         InputStream fis = new FileInputStream(CommonUtil.getRootPath() + file);
         Workbook wb = new XSSFWorkbook(fis);
         Sheet sheet = wb.getSheetAt(0);
@@ -57,26 +65,47 @@ public class ExcelUtil {
         Map<String, Map<String, String>> resultMap = new HashMap<>();
         int rowSize = sheet.getLastRowNum() + 1;
         System.out.println(rowSize);
-        for (int i = 1; i < rowSize; i++) {//遍历行，从1开始，略过第一行（0）
+        for (int i = 0; i < rowSize; i++) {
             Row row = sheet.getRow(i);
-            if (row == null) {//略过空行
+            if (row == null) {
                 continue;
             }
-            Map<String, String> rowMap = new HashMap();
-            int cellSize = columns.length;//行中有多少个单元格，也就是有多少列
-            for (int j = 0; j < cellSize; j++) {
-                Cell cell = row.getCell(j);
-                String key = columns[j];
-                String value = null;
-                if (cell != null) {
-                    value = cell.toString();
+            if (i == 0) {
+                readHeader(row, columns);
+            } else {
+                Map<String, String> rowMap = new HashMap();
+                ////行中有多少个单元格，也就是有多少列
+                int cellSize = columns.size();
+                for (int j = 0; j < cellSize; j++) {
+                    Cell cell = row.getCell(j);
+                    String key = columns.get(j);
+                    String value = null;
+                    if (cell != null) {
+                        value = cell.toString();
+                    }
+                    rowMap.put(key, value);
                 }
-                rowMap.put(key, value);
-            }
-            if(StringUtils.isNotBlank(rowMap.get(keyColumn))) {
-                resultMap.put(rowMap.get(keyColumn), rowMap);
+                if(StringUtils.isNotBlank(rowMap.get(columns.get(0)))) {
+                    resultMap.put(rowMap.get(columns.get(0)), rowMap);
+                }
             }
         }
         return resultMap;
+    }
+
+    /**
+     * 读取第一行，作为配置表表头
+     * @param row
+     * @param columns
+     */
+    private static void readHeader(Row row, List<String> columns) {
+        int columnNum = row.getLastCellNum();
+        for (int i = 0; i < columnNum; i++) {
+            Cell cell = row.getCell(i);
+            if(cell == null) {
+                break;
+            }
+            columns.add(cell.toString());
+        }
     }
 }

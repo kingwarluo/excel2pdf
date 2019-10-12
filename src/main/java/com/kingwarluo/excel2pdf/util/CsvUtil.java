@@ -1,41 +1,85 @@
 package com.kingwarluo.excel2pdf.util;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-
-import java.io.FileReader;
+import com.csvreader.CsvReader;
 import java.io.IOException;
-import java.io.Reader;
-import java.util.List;
+import java.nio.charset.Charset;
+import java.util.*;
 
 /**
- * @description:读取excel文件工具类
+ * @description:读取csv文件工具类
  *
  * @author jianhua.luo
  * @date 2019/8/28
  */
 public class CsvUtil {
 
-    private static final int headLength = 23;
-
-    public static Object[][] readCsvFile(String filePath) throws IOException {
-        Reader reader = new FileReader(filePath);
-        CSVParser parser = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(reader);
-        List<CSVRecord> records = parser.getRecords();
-
-        Object[][] recordList = new Object[records.size()][];
-        int row = 0;
-        for (CSVRecord csvRecord : records) {
-            Object[] data = new Object[23];
-            for (int i = 0; i < headLength; i++) {
-                data[i] = csvRecord.get(i);
-            }
-            recordList[row++] = data;
-        }
-        reader.close();
-        return recordList;
+    public static void main(String[] args) {
+        readCsvFile("D:\\IdeaProjects\\8-4-PRO.csv");
     }
 
+    /**
+     * csv表头信息
+     */
+    public static List<String> csvHeadList = new ArrayList<>();
+
+    /**
+     * csv数据列 List(Map<头， 数据>)
+     */
+    public static List<Map<String, Object>> csvDataList = new ArrayList<>();
+
+    /**
+     * 读取csv数据
+     * @param filePath
+     * @return
+     * @throws IOException
+     */
+    public static void readCsvFile(String filePath) {
+        clear();
+        try {
+            CsvReader reader = new CsvReader(filePath, ',', Charset.forName("GBK"));
+            int row = 0;
+
+            while (reader.readRecord()) {
+                if(row == 0) {
+                    readHead(reader.getValues());
+                } else {
+                    Map<String, Object> dataMap = readData(reader.getValues());
+                    csvDataList.add(dataMap);
+                }
+                row++;
+            }
+            reader.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * 读取csv头部信息
+     * @param headers
+     */
+    private static void readHead(String[] headers) {
+        csvHeadList = Arrays.asList(headers);
+    }
+
+    /**
+     * 读取csv内容信息
+     * @param dataArr
+     */
+    private static Map<String, Object> readData(String[] dataArr) {
+        Map<String, Object> dataMap = new HashMap<>();
+        for (int i = 0; i < dataArr.length; i++) {
+            dataMap.put(csvHeadList.get(i), dataArr[i]);
+        }
+        return dataMap;
+    }
+
+    /**
+     * 清空信息
+     */
+    public static void clear() {
+        csvHeadList = new ArrayList<>();
+        csvDataList = new ArrayList<>();
+    }
 
 }

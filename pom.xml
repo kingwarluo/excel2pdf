@@ -22,11 +22,11 @@
             <version>3.8</version>
         </dependency>
         <!-- csv -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-csv</artifactId>
-            <version>1.7</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.apache.commons</groupId>-->
+            <!--<artifactId>commons-csv</artifactId>-->
+            <!--<version>1.7</version>-->
+        <!--</dependency>-->
         <!-- pdf解析 -->
         <dependency>
             <groupId>com.itextpdf</groupId>
