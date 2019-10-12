@@ -11,12 +11,14 @@ import javax.swing.JFrame;
 import javax.swing.JButton;
 import javax.swing.Box;
 import javax.swing.JOptionPane;
-import java.awt.*;
+import java.awt.FileDialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @description:主要界面
@@ -35,6 +37,8 @@ public class MainFrame extends JFrame {
      * 打开文件对话框
      */
     FileDialog openFileDialog;
+
+    private static String FILE_PREFIX_CSV = "csv";
 
     public static void main(String[] args) {
         MainFrame mainFrame = new MainFrame();
@@ -107,7 +111,7 @@ public class MainFrame extends JFrame {
                 System.out.println(filePath);
                 String suffix = filePath.substring(filePath.lastIndexOf(".") + 1);
                 System.out.println(suffix.equals("csv"));
-                if(!suffix.equals("csv")){
+                if(!suffix.equals(FILE_PREFIX_CSV)){
                     JOptionPane.showMessageDialog(frame, "请选择Excel文件~",
                             "警告", JOptionPane.WARNING_MESSAGE);
                     return;
@@ -124,16 +128,25 @@ public class MainFrame extends JFrame {
                 try {
                     InputStream fis = new FileInputStream(CommonUtil.getRootPath() + "/VICSBOL.pdf");
                     PdfUtil pdf = new PdfUtil(fis);
-                    byte[] pdfPage = pdf.fillPageOne();
-                    byte[] pdfPage3 = pdf.fillPageThree();
-                    pdf.mergeMultiToOnePdf(pdfPage, pdfPage3);
+                    fillPageOne(pdf);
                 } catch (IOException ex) {
-                    ex.printStackTrace();
-                } catch (DocumentException ex) {
                     ex.printStackTrace();
                 }
             }
         });
+    }
+
+    /**
+     * 填充pdf第一页数据
+     * @param pdf
+     */
+    public void fillPageOne(PdfUtil pdf) {
+        //1、读取要生成的数据列表
+        List<Map<String, Object>> csvDataList = CsvUtil.csvDataList;
+        //2、读取关系配置表
+        Map<String, Map<String, String>> relationMap = ExcelUtil.relationMap;
+        //3、遍历数据列表，根据配置关系表填入pdf模板
+        //TODO
     }
 
 }

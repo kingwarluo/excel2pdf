@@ -33,31 +33,31 @@ public class ExcelUtil {
     public static Map<String, Map<String, String>> scacMap = null;
     public static Map<String, Map<String, String>> shipFromMap = null;
 
-    private static final String chargesToBillFile = "/ChargesBillTo.xlsx";
-    private static final List<String> chargesToBillHeadList = new ArrayList<>();
+    public static final String chargesToBillFile = "/ChargesBillTo.xlsx";
+    public static final List<String> chargesToBillHeadList = new ArrayList<>();
     public static void readChargesToBill() throws IOException {
-        chargesToBillMap = readExcelFile(chargesToBillFile, chargesToBillHeadList);
+        chargesToBillMap = readExcelFile(chargesToBillFile, chargesToBillHeadList, 0);
     }
 
-    private static final String relationFile = "/relation_bak.xlsx";
-    private static final List<String> relationHeadList = new ArrayList<>();
+    public static final String relationFile = "/relation.xlsx";
+    public static final List<String> relationHeadList = new ArrayList<>();
     public static void readRelation() throws IOException {
-        relationMap = readExcelFile(relationFile, relationHeadList);
+        relationMap = readExcelFile(relationFile, relationHeadList, 1);
     }
 
-    private static final String scacFile = "/SCAC.xlsx";
-    private static final List<String> scacHeadList = new ArrayList<>();
+    public static final String scacFile = "/SCAC.xlsx";
+    public static final List<String> scacHeadList = new ArrayList<>();
     public static void readSCAC() throws IOException {
-        scacMap = readExcelFile(scacFile, scacHeadList);
+        scacMap = readExcelFile(scacFile, scacHeadList, 0);
     }
 
-    private static final String shipFromFile = "/Ship From.xlsx";
-    private static final List<String> shipFromHeadList = new ArrayList<>();
+    public static final String shipFromFile = "/Ship From.xlsx";
+    public static final List<String> shipFromHeadList = new ArrayList<>();
     public static void readShipFrom() throws IOException {
-        shipFromMap = readExcelFile(shipFromFile, shipFromHeadList);
+        shipFromMap = readExcelFile(shipFromFile, shipFromHeadList, 0);
     }
 
-    private static Map<String, Map<String, String>> readExcelFile(String file, List<String> columns) throws IOException {
+    public static Map<String, Map<String, String>> readExcelFile(String file, List<String> columns, int startRow) throws IOException {
         InputStream fis = new FileInputStream(CommonUtil.getRootPath() + file);
         Workbook wb = new XSSFWorkbook(fis);
         Sheet sheet = wb.getSheetAt(0);
@@ -65,7 +65,7 @@ public class ExcelUtil {
         Map<String, Map<String, String>> resultMap = new HashMap<>();
         int rowSize = sheet.getLastRowNum() + 1;
         System.out.println(rowSize);
-        for (int i = 0; i < rowSize; i++) {
+        for (int i = startRow; i < rowSize; i++) {
             Row row = sheet.getRow(i);
             if (row == null) {
                 continue;
@@ -98,7 +98,7 @@ public class ExcelUtil {
      * @param row
      * @param columns
      */
-    private static void readHeader(Row row, List<String> columns) {
+    public static void readHeader(Row row, List<String> columns) {
         int columnNum = row.getLastCellNum();
         for (int i = 0; i < columnNum; i++) {
             Cell cell = row.getCell(i);

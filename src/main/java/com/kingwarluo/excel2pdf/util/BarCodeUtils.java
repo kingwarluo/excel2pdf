@@ -56,22 +56,27 @@ public class BarCodeUtils {
     };
 
     /**
-     * 生成 图片缓冲
+     * 生成Code128格式的条形码
      *
      * @param vaNumber VA 码
      * @return 返回BufferedImage
      * @author fxbin
      */
-    public static BufferedImage getBarCode(String vaNumber) {
-        try {
-            Code128Writer writer = new Code128Writer();
-            // 编码内容, 编码类型, 宽度, 高度, 设置参数
-            BitMatrix bitMatrix = writer.encode(vaNumber, BarcodeFormat.CODE_128, WIDTH, HEIGHT, hints);
-            return MatrixToImageWriter.toBufferedImage(bitMatrix);
-        } catch (WriterException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public static BufferedImage getBarCode128(String vaNumber) {
+        Code128Writer writer = new Code128Writer();
+        return getBarCode(writer, BarcodeFormat.CODE_128, vaNumber);
+    }
+
+    /**
+     * 生成Code39格式的条形码
+     *
+     * @param vaNumber VA 码
+     * @return 返回BufferedImage
+     * @author fxbin
+     */
+    public static BufferedImage getBarCode39(String vaNumber) {
+        Code39Writer writer = new Code39Writer();
+        return getBarCode(writer, BarcodeFormat.CODE_39, vaNumber);
     }
 
     /**

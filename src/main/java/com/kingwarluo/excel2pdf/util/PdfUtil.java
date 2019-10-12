@@ -5,10 +5,11 @@ import com.itextpdf.text.pdf.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.*;
-import java.text.SimpleDateFormat;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -27,11 +28,11 @@ public class PdfUtil {
 
     private AcroFields fields;
 
-    public PdfUtil(InputStream stream) throws IOException, DocumentException {
+    private static int NUM_39 = 39;
+
+    public PdfUtil(InputStream stream) {
         try {
             reader = new PdfReader(stream);
-            int totalPage = reader.getNumberOfPages();
-            System.out.println("totalPage:" + totalPage);
             ps = new PdfStamper(reader, bos);
             fields = ps.getAcroFields();
         } catch (Exception e) {
@@ -41,7 +42,48 @@ public class PdfUtil {
     }
 
     /**
-     * 遮挡location层
+     * 设置文本框值
+     * @param name
+     * @param value
+     * @throws IOException
+     * @throws DocumentException
+     */
+    public void setTextValue(String name, String value) throws IOException, DocumentException {
+        fields.setField(name, value);
+    }
+
+    /**
+     * 添加条形码
+     * @param vaNumber
+     * @param format
+     * @param x
+     * @param y
+     * @param scalePercent
+     * @throws IOException
+     * @throws DocumentException
+     */
+    public void setBarCodeImg(String vaNumber, int format, int x, int y, int scalePercent) throws IOException, DocumentException {
+        BufferedImage bufferedImage = null;
+        if(format == NUM_39) {
+            bufferedImage = BarCodeUtils.getBarCode39(vaNumber);
+        } else {
+            bufferedImage = BarCodeUtils.getBarCode128(vaNumber);
+        }
+        ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        ImageIO.write(bufferedImage, "jpg", bao);
+        Image img = Image.getInstance(bao.toByteArray());
+        //居中显示
+        img.setAlignment(1);
+        //显示位置，根据需要调整
+        img.setAbsolutePosition(x, y);
+        //显示为原条形码图片大小的比例，百分比
+        img.scalePercent(scalePercent);
+        PdfContentByte canvas = ps.getOverContent(1);
+        canvas.addImage(img);
+    }
+
+    /**
+     * 遮挡location层（暂时没用到）
      */
     public void shelterSecion() {
         PdfContentByte canvas = ps.getOverContent(1);
@@ -50,28 +92,6 @@ public class PdfUtil {
         canvas.rectangle(240, 640, 84, 14);
         canvas.fill();
         canvas.restoreState();
-    }
-
-    public void setFieldValue() throws IOException, DocumentException {
-        fields.setField("stname", "adfasdfasdfasdfasdfadfadfsdfasdfsdfaadfasdfasdfasdfasdfadfadfsdfasdfsdfasdfasdfasdfasdfasdfsdfasdfasdfasdfasdf");
-    }
-
-    /**
-     * 添加条形码
-     *
-     * @throws IOException
-     * @throws DocumentException
-     */
-    public void setBarCodeImg() throws IOException, DocumentException {
-        BufferedImage bufferedImage = BarCodeUtils.getBarCode("12345679");
-        ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        ImageIO.write(bufferedImage, "jpg", bao);
-        Image img = Image.getInstance(bao.toByteArray());
-        img.setAlignment(1);                         //居中显示
-        img.setAbsolutePosition(330, 680);//显示位置，根据需要调整
-        img.scalePercent(60);                          //显示为原条形码图片大小的比例，百分比
-        PdfContentByte canvas = ps.getOverContent(1);
-        canvas.addImage(img);
     }
 
     public byte[] fillPageThree() throws IOException, DocumentException {
@@ -95,9 +115,6 @@ public class PdfUtil {
      */
     public byte[] fillPageOne() {
         try {
-            shelterSecion();
-            setBarCodeImg();
-            setFieldValue();
             /* 必须要调用这个，否则文档不会生成的 */
             ps.setFormFlattening(true);
             ps.close();
