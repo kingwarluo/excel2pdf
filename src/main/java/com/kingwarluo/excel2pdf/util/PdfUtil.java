@@ -48,8 +48,12 @@ public class PdfUtil {
      * @throws IOException
      * @throws DocumentException
      */
-    public void setTextValue(String name, String value) throws IOException, DocumentException {
-        fields.setField(name, value);
+    public void setTextValue(String name, String value) {
+        try {
+            fields.setField(name, value);
+        } catch (IOException e) {
+        } catch (DocumentException e) {
+        }
     }
 
     /**
@@ -129,11 +133,12 @@ public class PdfUtil {
     /**
      * 将多个pdf合并成一个
      *
+     * @param savePdfPath
      * @param bytesArr
      * @throws DocumentException
      * @throws IOException
      */
-    public void mergeMultiToOnePdf(byte[]... bytesArr) throws DocumentException, IOException {
+    public void mergeMultiToOnePdf(String savePdfPath, byte[]... bytesArr) throws DocumentException, IOException {
         List<PdfReader> readerList = new ArrayList<PdfReader>();
         for (int i = 0; i < bytesArr.length; i++) {
             PdfReader reader = new PdfReader(bytesArr[i]);
@@ -145,7 +150,7 @@ public class PdfUtil {
         }
 
         Document document = new Document();
-        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(CommonUtil.SAVE_PDF_PATH));
+        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(savePdfPath));
         document.open();
         PdfContentByte cb = writer.getDirectContent();
 

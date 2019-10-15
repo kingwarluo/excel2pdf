@@ -11,12 +11,31 @@ import java.util.Date;
  */
 public class CommonUtil {
 
-    public static String SAVE_PDF_PATH = "D:/" + new SimpleDateFormat("yyMMddHHmmss").format(new Date()).toString() + "zsResult.pdf";
-
+    /**
+     * 获取根路径，不包含项目名
+     * @return
+     */
     public static String getRootPath() {
         String rootPath = System.getProperty("user.dir");
         //TODO 打包时，这层要去掉
         rootPath = rootPath.substring(0, rootPath.lastIndexOf("\\"));
         return rootPath;
+    }
+
+    /**
+     * 保存pdf路径
+     * @param shipFromCode
+     * @param bolNo
+     * @return
+     */
+    public static String savePdfPath(String shipFromCode, String bolNo) {
+        StringBuilder sb = new StringBuilder(getRootPath());
+        sb.append("/pdf/")
+                .append(shipFromCode)
+                .append("_")
+                .append(new SimpleDateFormat("yyMMddHHmmss").format(new Date()).toString())
+                .append("_")
+                .append(bolNo);
+        return sb.toString();
     }
 }

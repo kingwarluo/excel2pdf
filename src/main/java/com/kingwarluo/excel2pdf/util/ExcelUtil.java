@@ -28,21 +28,37 @@ public class ExcelUtil {
         }
     }
 
-    public static Map<String, Map<String, String>> chargesToBillMap = null;
-    public static Map<String, Map<String, String>> relationMap = null;
+
     public static Map<String, Map<String, String>> scacMap = null;
     public static Map<String, Map<String, String>> shipFromMap = null;
 
     public static final String chargesToBillFile = "/ChargesBillTo.xlsx";
     public static final List<String> chargesToBillHeadList = new ArrayList<>();
+    /**
+     * chargesToBill文件对应Map
+     */
+    public static Map<String, Map<String, String>> chargesToBillMap = null;
     public static void readChargesToBill() throws IOException {
         chargesToBillMap = readExcelFile(chargesToBillFile, chargesToBillHeadList, 0);
     }
 
     public static final String relationFile = "/relation.xlsx";
+    /**
+     * 头部列表
+     */
     public static final List<String> relationHeadList = new ArrayList<>();
+    /**
+     * 键值对，<key是pdf模板的fieldname, value是Map<头, 值>>
+     */
+    public static Map<String, Map<String, String>> relationMap = null;
     public static void readRelation() throws IOException {
         relationMap = readExcelFile(relationFile, relationHeadList, 1);
+    }
+    public static Map<String, Map<String, String>> ensureRelationMapNotNull() throws IOException {
+        if(relationMap == null || relationMap.isEmpty()) {
+            readRelation();
+        }
+        return relationMap;
     }
 
     public static final String scacFile = "/SCAC.xlsx";
@@ -108,4 +124,40 @@ public class ExcelUtil {
             columns.add(cell.toString());
         }
     }
+
+    /**
+     * 根据文件名获取表头列表
+     * @param filename
+     * @return
+     */
+    public static List<String> getHeadList(String filename) {
+        List<String> configHeadList = null;
+        if(chargesToBillFile.equals(filename)) {
+            configHeadList = chargesToBillHeadList;
+        } else if(shipFromFile.equals(filename)) {
+            configHeadList = shipFromHeadList;
+        } else if(scacFile.equals(filename)) {
+            configHeadList = scacHeadList;
+        }
+        return configHeadList;
+    }
+
+    /**
+     * 根据文件名获取数据Map
+     * @param filename
+     * @return
+     */
+    public static Map<String, String> getDataMap(String filename, String fieldname) {
+        Map<String, Map<String, String>> configFileDataMap = null;
+        if(chargesToBillFile.equals(filename)) {
+            configFileDataMap = chargesToBillMap;
+        } else if(shipFromFile.equals(filename)) {
+            configFileDataMap = shipFromMap;
+        } else if(scacFile.equals(filename)) {
+            configFileDataMap = scacMap;
+        }
+        Map<String, String> configDataMap = configFileDataMap.get(fieldname);
+        return configDataMap;
+    }
+
 }
