@@ -81,10 +81,10 @@ public class MainFrame extends JFrame {
             ExcelUtil.readSCAC();
             ExcelUtil.readShipFrom();
 
-            System.out.println(ExcelUtil.chargesToBillMap);
-            System.out.println(ExcelUtil.relationMap);
-            System.out.println(ExcelUtil.scacMap);
-            System.out.println(ExcelUtil.shipFromMap);
+//            System.out.println(ExcelUtil.chargesToBillMap);
+//            System.out.println(ExcelUtil.relationList);
+//            System.out.println(ExcelUtil.scacMap);
+//            System.out.println(ExcelUtil.shipFromMap);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -127,8 +127,15 @@ public class MainFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
+                    //1、读取要生成的数据列表
+                    List<Map<String, Object>> csvDataList = CsvUtil.csvDataList;
+                    if(csvDataList == null || csvDataList.size() == 0){
+                        JOptionPane.showMessageDialog(frame, "请选择Excel文件~",
+                                "警告", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
                     InputStream fis = new FileInputStream(CommonUtil.getRootPath() + "/VICSBOL.pdf");
-                    generatePDF(fis);
+                    generatePDF(csvDataList, fis);
                 } catch (FileNotFoundException ex) {
                     ex.printStackTrace();
                 }
@@ -138,25 +145,23 @@ public class MainFrame extends JFrame {
 
     /**
      * 填充pdf
-     * @param fis
+     * @param csvDataList   选择的文件数据集合
+     * @param fis           pdf模板文件流
      */
-    public void generatePDF(InputStream fis) {
-        //1、读取要生成的数据列表
-        List<Map<String, Object>> csvDataList = CsvUtil.csvDataList;
-        //2、遍历数据列表，根据配置关系表填入pdf模板
+    public void generatePDF(List<Map<String, Object>> csvDataList, InputStream fis) {
+        //1、遍历数据列表，根据配置关系表填入pdf模板
         for (Map<String, Object> dataMap : csvDataList) {
             //1、读取relation配置文件
-            Map<String, Map<String, String>> relationMap = null;
+            List<Map<String, String>> relationList = null;
             try {
-                relationMap = ExcelUtil.ensureRelationMapNotNull();
+                relationList = ExcelUtil.ensureRelationListNotNull();
                 //新建一个Map,保存当前pdf文件所指向的配置文件记录，key文件名， value文件对应的数据
                 Map<String, Map<String, String>> configRecordMap = new HashMap<>(3);
                 PdfUtil pdf = new PdfUtil(fis);
-                Iterator<String> it = relationMap.keySet().iterator();
-                while(it.hasNext()) {
-                    String key = it.next();
-                    Map<String, String> perRelationMap = relationMap.get(key);
-                    fillPDFField(key, perRelationMap, pdf, configRecordMap);
+
+                for (Map<String, String> relationMap : relationList) {
+                    String csvData = (String) dataMap.get(relationMap.get(Constants.RELATION_CSV_HEADER));
+                    fillPDFField(relationMap, pdf, configRecordMap, csvData);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -166,10 +171,11 @@ public class MainFrame extends JFrame {
 
     /**
      * 填充每一个字段属性
-     * @param key
-     * @param perRelationMap
+     *
+     * @param relationMap
      * @param pdf
      * @param configRecordMap
+     * @param csvData
      *
      * 2、读取csv header，看是否有值
      *    2.1 csv header无值，根据default value，default value有值就写入pdf模板，无值就不写
@@ -183,34 +189,67 @@ public class MainFrame extends JFrame {
      *          2.2.1.2 若relation filename无值，则向pdf模板写入从csv文件读取的值
      *       2.2.2 若csv header从csv文件没读取到值，则查看default value是否有值，default value有值就写入pdf模板，无值就不写
      */
-    public void fillPDFField(String key, Map<String, String> perRelationMap, PdfUtil pdf, Map<String, Map<String, String>> configRecordMap) {
-        String csvHeader = perRelationMap.get(Constants.RELATION_CSV_HEADER);
+    public void fillPDFField(Map<String, String> relationMap, PdfUtil pdf, Map<String, Map<String, String>> configRecordMap, String csvData) {
+        String key = relationMap.get(Constants.RELATION_FIELD_NAME);
+        String csvHeader = relationMap.get(Constants.RELATION_CSV_HEADER);
         if(StringUtils.isBlank(csvHeader)) {
-            String defaultValue = perRelationMap.get(Constants.RELATION_DEFAULT_VALUE);
+            String defaultValue = relationMap.get(Constants.RELATION_DEFAULT_VALUE);
             if(StringUtils.isNotBlank(defaultValue)) {
-                if(defaultValue.equals(Constants.RELATION_DEFAULT_VALUE_TODAY)) {
-                    pdf.setTextValue(key, new SimpleDateFormat("yyyy/MM/dd").format(new Date()).toString());
-                } else {
-                    String value = readValueFromConfig(perRelationMap.get(Constants.RELATION_RELATION_FILENAME), perRelationMap.get(Constants.RELATION_RELATION_FIELD), configRecordMap);
+                setDefaultValue(defaultValue, key, pdf);
+            } else {
+                String value = readValueFromConfig(relationMap.get(Constants.RELATION_RELATION_FILENAME), relationMap.get(Constants.RELATION_RELATION_FIELD), csvData, configRecordMap);
+                if(StringUtils.isNotBlank(value)) {
                     pdf.setTextValue(key, value);
                 }
             }
         } else {
+            if(StringUtils.isNotBlank(csvData)) {
+                if(StringUtils.isNotBlank(relationMap.get(Constants.RELATION_RELATION_FILENAME))) {
+                    String value = readValueFromConfig(relationMap.get(Constants.RELATION_RELATION_FILENAME), relationMap.get(Constants.RELATION_RELATION_FIELD), csvData, configRecordMap);
+                    if(StringUtils.isNotBlank(value)) {
+                        pdf.setTextValue(key, value);
+                    }
+                } else {
+                    pdf.setTextValue(key, csvData);
+                }
+            } else {
+                String defaultValue = relationMap.get(Constants.RELATION_DEFAULT_VALUE);
+                setDefaultValue(defaultValue, key, pdf);
+            }
+        }
+    }
 
+    /**
+     * 设置默认值
+     * @param defaultValue
+     * @param key
+     * @param pdf
+     */
+    public void setDefaultValue(String defaultValue, String key, PdfUtil pdf) {
+        if(StringUtils.isBlank(defaultValue)) {
+            return;
+        }
+        if(defaultValue.equals(Constants.RELATION_DEFAULT_VALUE_TODAY)) {
+            pdf.setTextValue(key, new SimpleDateFormat("yyyy/MM/dd").format(new Date()).toString());
+        } else {
+            pdf.setTextValue(key, defaultValue);
         }
     }
 
     /**
      * 从配置文件读取值
      *
-     * @param filename
-     * @param fieldname
+     * @param filename      配置文件名称
+     * @param fieldname     配置文件头head的值
      * @param configRecordMap
      */
-    public String readValueFromConfig(String filename, String fieldname, Map<String, Map<String, String>> configRecordMap) {
+    public String readValueFromConfig(String filename, String fieldname, String csvData, Map<String, Map<String, String>> configRecordMap) {
+        if(StringUtils.isBlank(filename)) {
+            return null;
+        }
         Map<String, String> configDataMap = configRecordMap.get(filename);
         if(configDataMap == null || configDataMap.size() == 0) {
-            configDataMap = ExcelUtil.getDataMap(filename, fieldname);
+            configDataMap = ExcelUtil.getDataMap(filename, csvData);
             putConfigRecordMap(configRecordMap, filename, configDataMap);
         }
         return configDataMap.get(fieldname);
