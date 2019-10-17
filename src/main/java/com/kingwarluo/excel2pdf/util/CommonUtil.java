@@ -35,7 +35,8 @@ public class CommonUtil {
                 .append("_")
                 .append(new SimpleDateFormat("yyMMddHHmmss").format(new Date()).toString())
                 .append("_")
-                .append(bolNo);
+                .append(bolNo)
+                .append(".pdf");
         return sb.toString();
     }
 }

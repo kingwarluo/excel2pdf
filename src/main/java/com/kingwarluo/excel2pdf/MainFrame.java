@@ -1,5 +1,6 @@
 package com.kingwarluo.excel2pdf;
 
+import com.itextpdf.text.DocumentException;
 import com.kingwarluo.excel2pdf.common.Constants;
 import com.kingwarluo.excel2pdf.util.CommonUtil;
 import com.kingwarluo.excel2pdf.util.CsvUtil;
@@ -159,14 +160,53 @@ public class MainFrame extends JFrame {
                 Map<String, Map<String, String>> configRecordMap = new HashMap<>(3);
                 PdfUtil pdf = new PdfUtil(fis);
 
+                String shipFromCode = "";
+                String bolNo = "";
                 for (Map<String, String> relationMap : relationList) {
-                    String csvData = (String) dataMap.get(relationMap.get(Constants.RELATION_CSV_HEADER));
+                    String csvData = getCsvData(relationMap.get(Constants.RELATION_CSV_HEADER), dataMap);
+                    if(Constants.SHIP_FROM_CODE.equals(relationMap.get(Constants.RELATION_CSV_HEADER))) {
+                        shipFromCode = csvData;
+                    }
+                    if(Constants.BOL_NO.equals(relationMap.get(Constants.RELATION_CSV_HEADER))) {
+                        bolNo = csvData;
+                    }
                     fillPDFField(relationMap, pdf, configRecordMap, csvData);
                 }
+                byte[] bytes = pdf.getTemplateBytes();
+                String savePath = CommonUtil.savePdfPath(shipFromCode, bolNo);
+                System.out.println("保存路径为：" + savePath);
+                pdf.mergeMultiToOnePdf(savePath, bytes);
             } catch (IOException e) {
+                e.printStackTrace();
+            } catch (DocumentException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * 根据relation配置文件的csv header字段，获取数据
+     * 注：csv header用‘,’隔开时，需获取多个值，用空格隔开
+     * @param csvHeaders
+     * @param dataMap
+     * @return
+     */
+    public String getCsvData(String csvHeaders, Map<String, Object> dataMap) {
+        StringBuilder headerDataSB = new StringBuilder();
+        if(StringUtils.isNotBlank(csvHeaders)) {
+            String[] csvHeaderArr = csvHeaders.split(",");
+            for (int i = 0; i < csvHeaderArr.length; i++) {
+                String csvData = (String) dataMap.get(csvHeaderArr[i]);
+                if(StringUtils.isNotBlank(csvData)) {
+                    if(headerDataSB.length() == 0) {
+                        headerDataSB.append(csvData);
+                    } else {
+                        headerDataSB.append(" ").append(csvData);
+                    }
+                }
+            }
+        }
+        return headerDataSB.toString();
     }
 
     /**

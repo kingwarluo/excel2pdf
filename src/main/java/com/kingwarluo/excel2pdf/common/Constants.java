@@ -43,4 +43,11 @@ public class Constants {
      */
     public static final String RELATION_DEFAULT_VALUE_TODAY = "today";
 
+    /**
+     * 这两个字段保存文件路径时使用
+     */
+    public static final String SHIP_FROM_CODE = "ShipFromCode";
+
+    public static final String BOL_NO = "BOL_No";
+
 }

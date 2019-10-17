@@ -5,10 +5,7 @@ import com.itextpdf.text.pdf.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -117,7 +114,7 @@ public class PdfUtil {
      * 填充模板第一页
      *
      */
-    public byte[] fillPageOne() {
+    public byte[] getTemplateBytes() {
         try {
             /* 必须要调用这个，否则文档不会生成的 */
             ps.setFormFlattening(true);
@@ -147,6 +144,13 @@ public class PdfUtil {
         int totalPages = 0;
         for (PdfReader reader : readerList) {
             totalPages += reader.getNumberOfPages();
+        }
+
+        //确保文件路径存在
+        File file = new File(savePdfPath);
+        File fileParent = file.getParentFile();
+        if(!fileParent.exists()){
+            fileParent.mkdirs();
         }
 
         Document document = new Document();
