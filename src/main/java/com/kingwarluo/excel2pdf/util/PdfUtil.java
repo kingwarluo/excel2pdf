@@ -6,7 +6,9 @@ import com.itextpdf.text.pdf.*;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -27,11 +29,18 @@ public class PdfUtil {
 
     private static int NUM_39 = 39;
 
+    BaseFont bf = null;
+
     public PdfUtil(InputStream stream) {
         try {
             reader = new PdfReader(stream);
+            byte[] bytes = reader.getPageContent(1);
+            Paragraph paragraph = new Paragraph();
             ps = new PdfStamper(reader, bos);
             fields = ps.getAcroFields();
+//            bf = BaseFont.createFont("c:\\windows\\fonts\\simkai.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            bf = BaseFont.createFont("STSongStd-Light", "UniGB-UCS2-H", BaseFont.EMBEDDED);
+//            bf = BaseFont.createFont(BaseFont.COURIER, "Cp1252", BaseFont.EMBEDDED);
         } catch (Exception e) {
             System.out.println("加载pdf模板失败");
             e.printStackTrace();
@@ -47,6 +56,8 @@ public class PdfUtil {
      */
     public void setTextValue(String name, String value) {
         try {
+            //设置字体
+            fields.setFieldProperty(name, "textfont", bf, null);
             fields.setField(name, value);
         } catch (IOException e) {
         } catch (DocumentException e) {
@@ -141,10 +152,6 @@ public class PdfUtil {
             PdfReader reader = new PdfReader(bytesArr[i]);
             readerList.add(reader);
         }
-        int totalPages = 0;
-        for (PdfReader reader : readerList) {
-            totalPages += reader.getNumberOfPages();
-        }
 
         //确保文件路径存在
         File file = new File(savePdfPath);
@@ -177,4 +184,14 @@ public class PdfUtil {
         document.close();
         writer.close();
     }
+
+    public static void main(String[] args) throws IOException, DocumentException {
+        String path = CommonUtil.getRootPath() + "/VICSBOL.pdf";
+        PdfUtil pdf = new PdfUtil(new FileInputStream(path));
+        pdf.setTextValue("sfname", "HOMEDOT.COM@HTTP.COM");
+        byte[] bytes = pdf.getTemplateBytes();
+        String savePath = CommonUtil.getRootPath() + "/VICSBOL_" + new SimpleDateFormat("HHmmss").format(new Date()).toString() + ".pdf";
+        pdf.mergeMultiToOnePdf(savePath, bytes);
+    }
+
 }
