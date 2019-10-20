@@ -56,7 +56,7 @@ public class ExcelUtil {
     }
 
     public static Map<String, Map<String, String>> readExcelFile(String file, List<String> columns, int startRow) throws IOException {
-        InputStream fis = new FileInputStream(CommonUtil.getRootPath() + "/" + file);
+        InputStream fis = new FileInputStream(CommonUtil.getRootPath() + "/config/" + file);
         Workbook wb = new XSSFWorkbook(fis);
         Sheet sheet = wb.getSheetAt(0);
 

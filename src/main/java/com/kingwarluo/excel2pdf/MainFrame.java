@@ -140,7 +140,7 @@ public class MainFrame extends JFrame {
                                 "警告", JOptionPane.WARNING_MESSAGE);
                         return;
                     }
-                    InputStream fis = new FileInputStream(CommonUtil.getRootPath() + "/VICSBOL.pdf");
+                    InputStream fis = new FileInputStream(CommonUtil.getRootPath() + "/config/VICSBOL.pdf");
                     generatePDF(csvDataList, fis);
                 } catch (FileNotFoundException ex) {
                     ex.printStackTrace();
