@@ -117,7 +117,7 @@ public class ExcelUtil {
     }
 
     public static List<Map<String, String>> readRelationFile(String file, List<String> columns) throws IOException {
-        InputStream fis = new FileInputStream(CommonUtil.getRootPath() + "/" + file);
+        InputStream fis = new FileInputStream(CommonUtil.getRootPath() + "/config/" + file);
         Workbook wb = new XSSFWorkbook(fis);
         Sheet sheet = wb.getSheetAt(0);
 
