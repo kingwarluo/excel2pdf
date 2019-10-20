@@ -12,6 +12,16 @@ import java.util.Date;
 public class CommonUtil {
 
     /**
+     * 数字 39
+     */
+    public static int NUM_39 = 39;
+
+    /**
+     * 数字 128
+     */
+    public static int NUM_128 = 128;
+
+    /**
      * 获取根路径，不包含项目名
      * @return
      */

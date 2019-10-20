@@ -25,8 +25,6 @@ public class PdfUtil {
 
     private AcroFields fields;
 
-    private static int NUM_39 = 39;
-
     public PdfUtil(InputStream stream) {
         try {
             reader = new PdfReader(stream);
@@ -47,9 +45,38 @@ public class PdfUtil {
      */
     public void setTextValue(String name, String value) {
         try {
+            Font font = new Font(BaseFont.createFont(), 32, Font.BOLD);
+            fields.setFieldProperty(name, "textfont", font.getBaseFont(), null);
+            fields.setFieldProperty(name, "textsize", 8.5f, null);
+            fields.setExtraMargin(10f, 0f);
+            if("terms1".equals(name) || "terms2".equals(name) || "see#0".equals(name) || "property".equals(name)) {
+                return;
+            }
             fields.setField(name, value);
         } catch (IOException e) {
         } catch (DocumentException e) {
+        }
+    }
+
+    /**
+     * 根据字段类别设置字段值
+     * @param name
+     * @param value
+     * @param fieldType
+     */
+    public void setTextValueWithType(String name, String value, String fieldType) {
+        if(fieldType.equals("boolean")) {
+            if("true".equalsIgnoreCase(value)) {
+                try {
+                    fields.setField(name, value, "√");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (DocumentException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            setTextValue(name, value);
         }
     }
 
@@ -63,24 +90,28 @@ public class PdfUtil {
      * @throws IOException
      * @throws DocumentException
      */
-    public void setBarCodeImg(String vaNumber, int format, int x, int y, int scalePercent) throws IOException, DocumentException {
-        BufferedImage bufferedImage = null;
-        if(format == NUM_39) {
-            bufferedImage = BarCodeUtils.getBarCode39(vaNumber);
-        } else {
-            bufferedImage = BarCodeUtils.getBarCode128(vaNumber);
+    public void setBarCodeImg(String vaNumber, int format, int x, int y, int scalePercent) {
+        try {
+            BufferedImage bufferedImage = null;
+            if (format == CommonUtil.NUM_39) {
+                bufferedImage = BarCodeUtils.getBarCode39(vaNumber);
+            } else {
+                bufferedImage = BarCodeUtils.getBarCode128(vaNumber);
+            }
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            ImageIO.write(bufferedImage, "jpg", bao);
+            Image img = Image.getInstance(bao.toByteArray());
+            //居中显示
+            img.setAlignment(1);
+            //显示位置，根据需要调整
+            img.setAbsolutePosition(x, y);
+            //显示为原条形码图片大小的比例，百分比
+            img.scalePercent(scalePercent);
+            PdfContentByte canvas = ps.getOverContent(1);
+            canvas.addImage(img);
+        } catch (Exception e) {
+
         }
-        ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        ImageIO.write(bufferedImage, "jpg", bao);
-        Image img = Image.getInstance(bao.toByteArray());
-        //居中显示
-        img.setAlignment(1);
-        //显示位置，根据需要调整
-        img.setAbsolutePosition(x, y);
-        //显示为原条形码图片大小的比例，百分比
-        img.scalePercent(scalePercent);
-        PdfContentByte canvas = ps.getOverContent(1);
-        canvas.addImage(img);
     }
 
     /**
