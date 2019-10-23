@@ -7,6 +7,7 @@ import com.kingwarluo.excel2pdf.util.CsvUtil;
 import com.kingwarluo.excel2pdf.util.PdfUtil;
 import com.kingwarluo.excel2pdf.util.ExcelUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import javax.swing.JFrame;
 import javax.swing.JButton;
@@ -15,10 +16,7 @@ import javax.swing.JOptionPane;
 import java.awt.FileDialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -132,19 +130,15 @@ public class MainFrame extends JFrame {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    //1、读取要生成的数据列表
-                    List<Map<String, Object>> csvDataList = CsvUtil.csvDataList;
-                    if(csvDataList == null || csvDataList.size() == 0){
-                        JOptionPane.showMessageDialog(frame, "请选择Excel文件~",
-                                "警告", JOptionPane.WARNING_MESSAGE);
-                        return;
-                    }
-                    InputStream fis = new FileInputStream(CommonUtil.getRootPath() + "/config/VICSBOL.pdf");
-                    generatePDF(csvDataList, fis);
-                } catch (FileNotFoundException ex) {
-                    ex.printStackTrace();
+                //1、读取要生成的数据列表
+                List<Map<String, Object>> csvDataList = CsvUtil.csvDataList;
+                if(csvDataList == null || csvDataList.size() == 0){
+                    JOptionPane.showMessageDialog(frame, "请选择Excel文件~",
+                            "警告", JOptionPane.WARNING_MESSAGE);
+                    return;
                 }
+                File file = new File(CommonUtil.getRootPath() + "/config/VICSBOL.pdf");
+                generatePDF(csvDataList, file);
             }
         });
     }
@@ -152,9 +146,9 @@ public class MainFrame extends JFrame {
     /**
      * 填充pdf
      * @param csvDataList   选择的文件数据集合
-     * @param fis           pdf模板文件流
+     * @param file           pdf模板文件
      */
-    public void generatePDF(List<Map<String, Object>> csvDataList, InputStream fis) {
+    public void generatePDF(List<Map<String, Object>> csvDataList, File file) {
         //1、遍历数据列表，根据配置关系表填入pdf模板
         for (Map<String, Object> dataMap : csvDataList) {
             //1、读取relation配置文件
@@ -163,7 +157,7 @@ public class MainFrame extends JFrame {
                 relationList = ExcelUtil.ensureRelationListNotNull();
                 //新建一个Map,保存当前pdf文件所指向的配置文件记录，key文件名， value文件对应的数据
                 Map<String, Map<String, String>> configRecordMap = new HashMap<>(3);
-                PdfUtil pdf = new PdfUtil(fis);
+                PdfUtil pdf = new PdfUtil(new FileInputStream(file));
 
                 String shipFromCode = "";
                 String bolNo = "";
@@ -189,6 +183,8 @@ public class MainFrame extends JFrame {
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (DocumentException e) {
+                e.printStackTrace();
+            } catch (InvalidFormatException e) {
                 e.printStackTrace();
             }
         }

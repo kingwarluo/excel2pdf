@@ -2,10 +2,8 @@ package com.kingwarluo.excel2pdf.util;
 
 import com.kingwarluo.excel2pdf.common.Constants;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileInputStream;
@@ -26,6 +24,8 @@ public class ExcelUtil {
             readRelation();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (InvalidFormatException e) {
+            e.printStackTrace();
         }
     }
 
@@ -39,25 +39,25 @@ public class ExcelUtil {
      * chargesToBill文件对应Map
      */
     public static Map<String, Map<String, String>> chargesToBillMap = null;
-    public static void readChargesToBill() throws IOException {
+    public static void readChargesToBill() throws IOException, InvalidFormatException {
         chargesToBillMap = readExcelFile(chargesToBillFile, chargesToBillHeadList, 0);
     }
 
     public static final String scacFile = "SCAC.xlsx";
     public static final List<String> scacHeadList = new ArrayList<>();
-    public static void readSCAC() throws IOException {
+    public static void readSCAC() throws IOException, InvalidFormatException {
         scacMap = readExcelFile(scacFile, scacHeadList, 0);
     }
 
     public static final String shipFromFile = "Ship From.xlsx";
     public static final List<String> shipFromHeadList = new ArrayList<>();
-    public static void readShipFrom() throws IOException {
+    public static void readShipFrom() throws IOException, InvalidFormatException {
         shipFromMap = readExcelFile(shipFromFile, shipFromHeadList, 0);
     }
 
-    public static Map<String, Map<String, String>> readExcelFile(String file, List<String> columns, int startRow) throws IOException {
+    public static Map<String, Map<String, String>> readExcelFile(String file, List<String> columns, int startRow) throws IOException, InvalidFormatException {
         InputStream fis = new FileInputStream(CommonUtil.getRootPath() + "/config/" + file);
-        Workbook wb = new XSSFWorkbook(fis);
+        Workbook wb = WorkbookFactory.create(fis);
         Sheet sheet = wb.getSheetAt(0);
 
         Map<String, Map<String, String>> resultMap = new HashMap<>();
@@ -106,19 +106,19 @@ public class ExcelUtil {
      * 键值对，<key是pdf模板的fieldname, value是Map<头, 值>>
      */
     public static Map<String, Map<String, String>> relationMap = new HashMap<>();
-    public static void readRelation() throws IOException {
+    public static void readRelation() throws IOException, InvalidFormatException {
         relationList = readRelationFile(relationFile, relationHeadList);
     }
-    public static List<Map<String, String>> ensureRelationListNotNull() throws IOException {
+    public static List<Map<String, String>> ensureRelationListNotNull() throws IOException, InvalidFormatException {
         if(relationList == null || relationList.isEmpty()) {
             readRelation();
         }
         return relationList;
     }
 
-    public static List<Map<String, String>> readRelationFile(String file, List<String> columns) throws IOException {
+    public static List<Map<String, String>> readRelationFile(String file, List<String> columns) throws IOException, InvalidFormatException {
         InputStream fis = new FileInputStream(CommonUtil.getRootPath() + "/config/" + file);
-        Workbook wb = new XSSFWorkbook(fis);
+        Workbook wb = WorkbookFactory.create(fis);
         Sheet sheet = wb.getSheetAt(0);
 
         List<Map<String, String>> resultList = new ArrayList<>();
