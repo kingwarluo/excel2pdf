@@ -1,5 +1,6 @@
 package com.kingwarluo.excel2pdf.util;
 
+import com.kingwarluo.excel2pdf.common.Constants;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -55,7 +56,7 @@ public class ExcelUtil {
     }
 
     public static Map<String, Map<String, String>> readExcelFile(String file, List<String> columns, int startRow) throws IOException {
-        InputStream fis = new FileInputStream(CommonUtil.getRootPath() + "/" + file);
+        InputStream fis = new FileInputStream(CommonUtil.getRootPath() + "/config/" + file);
         Workbook wb = new XSSFWorkbook(fis);
         Sheet sheet = wb.getSheetAt(0);
 
@@ -100,6 +101,11 @@ public class ExcelUtil {
      * 键值对，<key是pdf模板的fieldname, value是Map<头, 值>>
      */
     public static List<Map<String, String>> relationList = null;
+
+    /**
+     * 键值对，<key是pdf模板的fieldname, value是Map<头, 值>>
+     */
+    public static Map<String, Map<String, String>> relationMap = new HashMap<>();
     public static void readRelation() throws IOException {
         relationList = readRelationFile(relationFile, relationHeadList);
     }
@@ -111,7 +117,7 @@ public class ExcelUtil {
     }
 
     public static List<Map<String, String>> readRelationFile(String file, List<String> columns) throws IOException {
-        InputStream fis = new FileInputStream(CommonUtil.getRootPath() + "/" + file);
+        InputStream fis = new FileInputStream(CommonUtil.getRootPath() + "/config/" + file);
         Workbook wb = new XSSFWorkbook(fis);
         Sheet sheet = wb.getSheetAt(0);
 
@@ -138,6 +144,7 @@ public class ExcelUtil {
                     rowMap.put(key, value);
                 }
                 resultList.add(rowMap);
+                relationMap.put(rowMap.get(Constants.RELATION_FIELD_NAME), rowMap);
             }
         }
         return resultList;

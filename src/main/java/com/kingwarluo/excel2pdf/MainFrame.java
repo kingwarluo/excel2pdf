@@ -42,6 +42,11 @@ public class MainFrame extends JFrame {
 
     private static String FILE_PREFIX_CSV = "csv";
 
+    /**
+     * 需要生成条形码的字段
+     */
+    private static String needCodeBar = "boln,pro";
+
     public static void main(String[] args) {
         MainFrame mainFrame = new MainFrame();
     }
@@ -135,7 +140,7 @@ public class MainFrame extends JFrame {
                                 "警告", JOptionPane.WARNING_MESSAGE);
                         return;
                     }
-                    InputStream fis = new FileInputStream(CommonUtil.getRootPath() + "/VICSBOL.pdf");
+                    InputStream fis = new FileInputStream(CommonUtil.getRootPath() + "/config/VICSBOL.pdf");
                     generatePDF(csvDataList, fis);
                 } catch (FileNotFoundException ex) {
                     ex.printStackTrace();
@@ -163,14 +168,19 @@ public class MainFrame extends JFrame {
                 String shipFromCode = "";
                 String bolNo = "";
                 for (Map<String, String> relationMap : relationList) {
-                    String csvData = getCsvData(relationMap.get(Constants.RELATION_CSV_HEADER), dataMap);
-                    if(Constants.SHIP_FROM_CODE.equals(relationMap.get(Constants.RELATION_CSV_HEADER))) {
-                        shipFromCode = csvData;
+                    String key = relationMap.get(Constants.RELATION_FIELD_NAME);
+                    if("pkgstot".equals(key) || "wgttot".equals(key)) {
+                        fillTotalData(pdf, key, dataMap);
+                    } else {
+                        String csvData = getCsvData(relationMap.get(Constants.RELATION_CSV_HEADER), dataMap);
+                        if(Constants.SHIP_FROM_CODE.equals(relationMap.get(Constants.RELATION_CSV_HEADER))) {
+                            shipFromCode = csvData;
+                        }
+                        if(Constants.BOL_NO.equals(relationMap.get(Constants.RELATION_CSV_HEADER))) {
+                            bolNo = csvData;
+                        }
+                        fillPDFField(relationMap, pdf, configRecordMap, csvData);
                     }
-                    if(Constants.BOL_NO.equals(relationMap.get(Constants.RELATION_CSV_HEADER))) {
-                        bolNo = csvData;
-                    }
-                    fillPDFField(relationMap, pdf, configRecordMap, csvData);
                 }
                 byte[] bytes = pdf.getTemplateBytes();
                 String savePath = CommonUtil.savePdfPath(shipFromCode, bolNo);
@@ -182,6 +192,38 @@ public class MainFrame extends JFrame {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * 需要计算的值
+     * @param pdf
+     * @param key
+     * @param dataMap
+     */
+    private void fillTotalData(PdfUtil pdf, String key, Map<String, Object> dataMap) {
+        String head = "";
+        if("pkgstot".equals(key)) {
+            head = "pkgs";
+        } else if("wgttot".equals(key)) {
+            head = "wgt";
+        }
+        Integer result = new Integer(0);
+        for (int i = 1; i <= 8; i++) {
+            Map<String, String> relationMap = ExcelUtil.relationMap.get(head + i);
+            if(relationMap == null || relationMap.size() == 0) {
+                continue;
+            }
+            String relationCsvHead = relationMap.get(Constants.RELATION_CSV_HEADER);
+            if(StringUtils.isBlank(relationCsvHead)) {
+                continue;
+            }
+            String csvData = (String) dataMap.get(relationCsvHead);
+            if(StringUtils.isNotBlank(csvData)) {
+                Integer value = Integer.parseInt(csvData);
+                result += value;
+            }
+        }
+        pdf.setTextValue(key, String.valueOf(result));
     }
 
     /**
@@ -231,6 +273,7 @@ public class MainFrame extends JFrame {
      */
     public void fillPDFField(Map<String, String> relationMap, PdfUtil pdf, Map<String, Map<String, String>> configRecordMap, String csvData) {
         String key = relationMap.get(Constants.RELATION_FIELD_NAME);
+        String fieldType = relationMap.get(Constants.RELATION_FIELD_PROPERTY);
         String csvHeader = relationMap.get(Constants.RELATION_CSV_HEADER);
         if(StringUtils.isBlank(csvHeader)) {
             String defaultValue = relationMap.get(Constants.RELATION_DEFAULT_VALUE);
@@ -250,12 +293,30 @@ public class MainFrame extends JFrame {
                         pdf.setTextValue(key, value);
                     }
                 } else {
-                    pdf.setTextValue(key, csvData);
+                    pdf.setTextValueWithType(key, csvData, fieldType);
+                    if(needCodeBar.contains(key)) {
+                        //如果csv有值，生成条形码
+                        generateCodeBar(pdf, key, csvData);
+                    }
                 }
             } else {
                 String defaultValue = relationMap.get(Constants.RELATION_DEFAULT_VALUE);
                 setDefaultValue(defaultValue, key, pdf);
             }
+        }
+    }
+
+    /**
+     * 生成条形码
+     * @param pdf
+     * @param key
+     * @param csvData
+     */
+    private void generateCodeBar(PdfUtil pdf, String key, String csvData) {
+        if("boln".equals(key)) {
+            pdf.setBarCodeImg(csvData, CommonUtil.NUM_128, 360, 670, 35);
+        } else if("pro".equals(key)) {
+            pdf.setBarCodeImg(csvData, CommonUtil.NUM_39, 360, 570, 35);
         }
     }
 
@@ -270,7 +331,7 @@ public class MainFrame extends JFrame {
             return;
         }
         if(defaultValue.equals(Constants.RELATION_DEFAULT_VALUE_TODAY)) {
-            pdf.setTextValue(key, new SimpleDateFormat("yyyy/MM/dd").format(new Date()).toString());
+            pdf.setTextValue(key, new SimpleDateFormat("MM/dd/yyyy").format(new Date()).toString());
         } else {
             pdf.setTextValue(key, defaultValue);
         }

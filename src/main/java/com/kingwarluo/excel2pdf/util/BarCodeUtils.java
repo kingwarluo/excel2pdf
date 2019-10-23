@@ -31,12 +31,12 @@ public class BarCodeUtils {
     /**
      * 条形码宽度
      */
-    private static final int WIDTH = 300;
+    private static final int WIDTH = 450;
 
     /**
      * 条形码高度
      */
-    private static final int HEIGHT = 50;
+    private static final int HEIGHT = 80;
 
     /**
      * 加文字 条形码
@@ -164,7 +164,8 @@ public class BarCodeUtils {
         //Bill of Lading Number  Code.128
         //Pro number    Code.39
         Writer writer = new UPCEWriter();
-        BufferedImage image = insertWords(getBarCode(writer, BarcodeFormat.UPC_EAN_EXTENSION, "12956732-7"), "中国");
+//        BufferedImage image = insertWords(getBarCode(writer, BarcodeFormat.UPC_EAN_EXTENSION, "12956732-7"), "中国");
+        BufferedImage image = getBarCode39("1231414");
         ImageIO.write(image, "jpg", new File("D://abc.jpg"));
     }
 }

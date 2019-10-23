@@ -21,12 +21,6 @@
             <artifactId>poi</artifactId>
             <version>3.8</version>
         </dependency>
-        <!-- csv -->
-        <!--<dependency>-->
-            <!--<groupId>org.apache.commons</groupId>-->
-            <!--<artifactId>commons-csv</artifactId>-->
-            <!--<version>1.7</version>-->
-        <!--</dependency>-->
         <!-- pdf解析 -->
         <dependency>
             <groupId>com.itextpdf</groupId>
@@ -54,6 +48,7 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.6</version>
         </dependency>
+
     </dependencies>
 
     <build>
@@ -95,12 +90,14 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- 打包引入本地jar -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
         </plugins>

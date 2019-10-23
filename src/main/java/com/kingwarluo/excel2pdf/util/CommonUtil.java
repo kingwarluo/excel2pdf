@@ -12,13 +12,23 @@ import java.util.Date;
 public class CommonUtil {
 
     /**
+     * 数字 39
+     */
+    public static int NUM_39 = 39;
+
+    /**
+     * 数字 128
+     */
+    public static int NUM_128 = 128;
+
+    /**
      * 获取根路径，不包含项目名
      * @return
      */
     public static String getRootPath() {
         String rootPath = System.getProperty("user.dir");
         //TODO 打包时，这层要去掉
-        rootPath = rootPath.substring(0, rootPath.lastIndexOf("\\"));
+//        rootPath = rootPath.substring(0, rootPath.lastIndexOf("\\"));
         return rootPath;
     }
 
