@@ -1,6 +1,10 @@
 package com.kingwarluo.excel2pdf;
 
+import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfWriter;
 import com.kingwarluo.excel2pdf.common.Constants;
 import com.kingwarluo.excel2pdf.util.CommonUtil;
 import com.kingwarluo.excel2pdf.util.CsvUtil;
@@ -43,7 +47,7 @@ public class MainFrame extends JFrame {
     /**
      * 需要生成条形码的字段
      */
-    private static String needCodeBar = "boln,pro";
+    private static String needCodeBar = "boln,pro,p3bol,p3po,p3co,p3pro";
 
     public static void main(String[] args) {
         MainFrame mainFrame = new MainFrame();
@@ -149,7 +153,7 @@ public class MainFrame extends JFrame {
      * @param file           pdf模板文件
      */
     public void generatePDF(List<Map<String, Object>> csvDataList, File file) {
-        //1、遍历数据列表，根据配置关系表填入pdf模板
+        //1、遍历csv数据列表，根据配置关系表填入pdf模板
         for (Map<String, Object> dataMap : csvDataList) {
             //1、读取relation配置文件
             List<Map<String, String>> relationList = null;
@@ -313,6 +317,14 @@ public class MainFrame extends JFrame {
             pdf.setBarCodeImg(csvData, CommonUtil.NUM_128, 360, 670, 35);
         } else if("pro".equals(key)) {
             pdf.setBarCodeImg(csvData, CommonUtil.NUM_39, 360, 570, 35);
+        } else if ("p3bol".equals(key)){
+            pdf.setBarCodeImg(csvData, CommonUtil.NUM_128, 360, 570, 35);
+        } else if("p3po".equals(key)) {
+            pdf.setBarCodeImg(csvData, CommonUtil.NUM_128, 360, 670, 35);
+        } else if("p3co".equals(key)) {
+            pdf.setBarCodeImg(csvData, CommonUtil.NUM_128, 360, 770, 35);
+        } else if("p3pro".equals(key)) {
+            pdf.setBarCodeImg(csvData, CommonUtil.NUM_128, 360, 870, 35);
         }
     }
 

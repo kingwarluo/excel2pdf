@@ -30,6 +30,7 @@ public class PdfUtil {
             reader = new PdfReader(stream);
             ps = new PdfStamper(reader, bos);
             fields = ps.getAcroFields();
+            fields.setExtraMargin(10f, 0f);
         } catch (Exception e) {
             System.out.println("加载pdf模板失败");
             e.printStackTrace();
@@ -45,10 +46,7 @@ public class PdfUtil {
      */
     public void setTextValue(String name, String value) {
         try {
-            Font font = new Font(BaseFont.createFont(), 32, Font.BOLD);
-            fields.setFieldProperty(name, "textfont", font.getBaseFont(), null);
             fields.setFieldProperty(name, "textsize", 8.5f, null);
-            fields.setExtraMargin(10f, 0f);
             if("terms1".equals(name) || "terms2".equals(name) || "see#0".equals(name) || "property".equals(name)) {
                 return;
             }
@@ -112,33 +110,6 @@ public class PdfUtil {
         } catch (Exception e) {
 
         }
-    }
-
-    /**
-     * 遮挡location层（暂时没用到）
-     */
-    public void shelterSecion() {
-        PdfContentByte canvas = ps.getOverContent(1);
-        canvas.saveState();
-        canvas.setColorFill(BaseColor.WHITE);
-        canvas.rectangle(240, 640, 84, 14);
-        canvas.fill();
-        canvas.restoreState();
-    }
-
-    public byte[] fillPageThree() throws IOException, DocumentException {
-        Document document = new Document();
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        PdfWriter writer = PdfWriter.getInstance(document, bos);
-        document.open();
-        document.newPage();
-        BaseFont bfChinese = BaseFont.createFont("c://windows//fonts//BSSYM7.TTF", BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
-        com.itextpdf.text.Font FontChinese18 = new com.itextpdf.text.Font(bfChinese, 18, com.itextpdf.text.Font.BOLD);
-        Paragraph blankRow1 = new Paragraph(24f, " ", FontChinese18);
-        document.add(blankRow1);
-        document.add(new Paragraph("1231231312"));
-        document.close();
-        return bos.toByteArray();
     }
 
     /**
