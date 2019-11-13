@@ -43,7 +43,7 @@ public class CsvReader {
     public static final int ESCAPE_MODE_DOUBLED = 1;
     public static final int ESCAPE_MODE_BACKSLASH = 2;
 
-    public CsvReader(String var1, char var2, Charset var3) throws FileNotFoundException {
+    public CsvReader(String filePath, char delimiter, Charset charset) throws FileNotFoundException {
         this.inputStream = null;
         this.fileName = null;
         this.userSettings = new CsvReader.UserSettings();
@@ -65,29 +65,29 @@ public class CsvReader {
         this.values = new String[10];
         this.initialized = false;
         this.closed = false;
-        if (var1 == null) {
+        if (filePath == null) {
             throw new IllegalArgumentException("Parameter fileName can not be null.");
-        } else if (var3 == null) {
+        } else if (charset == null) {
             throw new IllegalArgumentException("Parameter charset can not be null.");
-        } else if (!(new File(var1)).exists()) {
-            throw new FileNotFoundException("File " + var1 + " does not exist.");
+        } else if (!(new File(filePath)).exists()) {
+            throw new FileNotFoundException("File " + filePath + " does not exist.");
         } else {
-            this.fileName = var1;
-            this.userSettings.Delimiter = var2;
-            this.charset = var3;
+            this.fileName = filePath;
+            this.userSettings.Delimiter = delimiter;
+            this.charset = charset;
             this.isQualified = new boolean[this.values.length];
         }
     }
 
-    public CsvReader(String var1, char var2) throws FileNotFoundException {
-        this(var1, var2, Charset.forName("ISO-8859-1"));
+    public CsvReader(String filePath, char delimiter) throws FileNotFoundException {
+        this(filePath, delimiter, Charset.forName("ISO-8859-1"));
     }
 
-    public CsvReader(String var1) throws FileNotFoundException {
-        this(var1, ',');
+    public CsvReader(String filePath) throws FileNotFoundException {
+        this(filePath, ',');
     }
 
-    public CsvReader(Reader var1, char var2) {
+    public CsvReader(Reader reader, char delimiter) {
         this.inputStream = null;
         this.fileName = null;
         this.userSettings = new CsvReader.UserSettings();
@@ -109,26 +109,26 @@ public class CsvReader {
         this.values = new String[10];
         this.initialized = false;
         this.closed = false;
-        if (var1 == null) {
+        if (reader == null) {
             throw new IllegalArgumentException("Parameter inputStream can not be null.");
         } else {
-            this.inputStream = var1;
-            this.userSettings.Delimiter = var2;
+            this.inputStream = reader;
+            this.userSettings.Delimiter = delimiter;
             this.initialized = true;
             this.isQualified = new boolean[this.values.length];
         }
     }
 
-    public CsvReader(Reader var1) {
-        this(var1, ',');
+    public CsvReader(Reader reader) {
+        this(reader, ',');
     }
 
-    public CsvReader(InputStream var1, char var2, Charset var3) {
-        this((Reader)(new InputStreamReader(var1, var3)), var2);
+    public CsvReader(InputStream readerStream, char delimiter, Charset charset) {
+        this((Reader)(new InputStreamReader(readerStream, charset)), delimiter);
     }
 
-    public CsvReader(InputStream var1, Charset var2) {
-        this((Reader)(new InputStreamReader(var1, var2)));
+    public CsvReader(InputStream readerStream, Charset charset) {
+        this((Reader)(new InputStreamReader(readerStream, charset)));
     }
 
     public boolean getCaptureRawRecord() {
@@ -268,9 +268,9 @@ public class CsvReader {
 
     public String[] getValues() throws IOException {
         this.checkClosed();
-        String[] var1 = new String[this.columnsCount];
-        System.arraycopy(this.values, 0, var1, 0, this.columnsCount);
-        return var1;
+        String[] columnsCount = new String[this.columnsCount];
+        System.arraycopy(this.values, 0, columnsCount, 0, this.columnsCount);
+        return columnsCount;
     }
 
     public String get(int var1) throws IOException {

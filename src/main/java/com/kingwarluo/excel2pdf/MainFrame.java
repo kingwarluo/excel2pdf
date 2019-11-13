@@ -1,10 +1,6 @@
 package com.kingwarluo.excel2pdf;
 
-import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfWriter;
 import com.kingwarluo.excel2pdf.common.Constants;
 import com.kingwarluo.excel2pdf.util.CommonUtil;
 import com.kingwarluo.excel2pdf.util.CsvUtil;
@@ -74,6 +70,7 @@ public class MainFrame extends JFrame {
         readExcel();
         //设置按钮事件
         addEvents(this);
+        System.out.println("资源加载完成");
     }
 
     /**
@@ -88,11 +85,6 @@ public class MainFrame extends JFrame {
             ExcelUtil.readRelation();
             ExcelUtil.readSCAC();
             ExcelUtil.readShipFrom();
-
-//            System.out.println(ExcelUtil.chargesToBillMap);
-//            System.out.println(ExcelUtil.relationList);
-//            System.out.println(ExcelUtil.scacMap);
-//            System.out.println(ExcelUtil.shipFromMap);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -117,9 +109,7 @@ public class MainFrame extends JFrame {
                     return;
                 }
                 String filePath = dirName + fileName;
-                System.out.println(filePath);
                 String suffix = filePath.substring(filePath.lastIndexOf(".") + 1);
-                System.out.println(suffix.equals("csv"));
                 if(!suffix.equals(FILE_PREFIX_CSV)){
                     JOptionPane.showMessageDialog(frame, "请选择Excel文件~",
                             "警告", JOptionPane.WARNING_MESSAGE);
@@ -143,6 +133,9 @@ public class MainFrame extends JFrame {
                 }
                 File file = new File(CommonUtil.getRootPath() + "/config/VICSBOL.pdf");
                 generatePDF(csvDataList, file);
+                JOptionPane.showMessageDialog(frame, "生成成功！",
+                        "信息", JOptionPane.INFORMATION_MESSAGE);
+                return;
             }
         });
     }

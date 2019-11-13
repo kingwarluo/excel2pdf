@@ -25,12 +25,18 @@ public class PdfUtil {
 
     private AcroFields fields;
 
+    private BaseFont baseFont;
+
+    private BaseFont boldFont;
+
     public PdfUtil(InputStream stream) {
         try {
             reader = new PdfReader(stream);
             ps = new PdfStamper(reader, bos);
             fields = ps.getAcroFields();
-            fields.setExtraMargin(10f, 0f);
+            baseFont = BaseFont.createFont("STSongStd-Light", "UniGB-UCS2-H", BaseFont.NOT_EMBEDDED);
+            boldFont = BaseFont.createFont("Helvetica-Bold", "Cp1252", BaseFont.NOT_EMBEDDED);
+//            fields.setExtraMargin(10f, 0f);
         } catch (Exception e) {
             System.out.println("加载pdf模板失败");
             e.printStackTrace();
@@ -50,6 +56,9 @@ public class PdfUtil {
             if("terms1".equals(name) || "terms2".equals(name) || "see#0".equals(name) || "property".equals(name)) {
                 return;
             }
+            if("pageof".equals(name)) {
+                value = "1";
+            }
             fields.setField(name, value);
         } catch (IOException e) {
         } catch (DocumentException e) {
@@ -66,7 +75,8 @@ public class PdfUtil {
         if(fieldType.equals("boolean")) {
             if("true".equalsIgnoreCase(value)) {
                 try {
-                    fields.setField(name, value, "√");
+                    fields.setFieldProperty(name, "textfont", baseFont, null);
+                    fields.setField(name, "√");
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (DocumentException e) {

@@ -62,7 +62,6 @@ public class ExcelUtil {
 
         Map<String, Map<String, String>> resultMap = new HashMap<>();
         int rowSize = sheet.getLastRowNum() + 1;
-        System.out.println(rowSize);
         for (int i = startRow; i < rowSize; i++) {
             Row row = sheet.getRow(i);
             if (row == null) {
